@@ -26,10 +26,9 @@
 ### 1. 리포지토리 복제 (Clone)
 
 ```bash
-git clone <your-repository-url>
-cd <your-project-directory>
+git clone https://github.com/usn757/boot-container-compose
+cd boot-container-compose
 ```
-`<your-repository-url>`과 `<your-project-directory>`를 실제 값으로 변경해주세요.
 
 ### 2. 환경 변수 설정 (`.env` 파일)
 
