@@ -173,7 +173,41 @@ Docker Compose를 사용하면 `build: .` 설정으로 인해 `docker-compose up
 
 ```bash
 docker build -t my-boot:postgres -f Dockerfile .
+
 ```
+
+---
+## ⚠️ 중요: 첫 실행 시 데이터베이스 스키마
+
+`docker-compose.yml` 또는 `.env` 파일을 통해 `SPRING_PROFILES_ACTIVE`가 `prod`로 설정되어 있고, `src/main/resources/application-prod.yaml` 파일에 `spring.jpa.hibernate.ddl-auto: none`으로 지정되어 있습니다.
+
+**이는 운영 환경을 위한 설정으로, 애플리케이션이 자동으로 데이터베이스 스키마(테이블 등)를 생성하거나 변경하지 않습니다.**
+
+따라서, **이 프로젝트를 처음 실행하거나 `docker-compose down -v` 명령으로 데이터베이스 볼륨을 초기화한 후에는 `pet` 테이블과 같은 필요한 스키마가 존재하지 않아 API 요청 시 오류가 발생할 수 있습니다.**
+
+**해결 방법:**
+
+1.  **데이터베이스 마이그레이션 도구 사용 (권장)**:
+    * Flyway나 Liquibase와 같은 도구를 사용하여 스키마를 형상 관리하고, 애플리케이션 시작 시 자동으로 필요한 스키마를 생성/변경하도록 설정하는 것이 가장 이상적인 방법입니다. (이 프로젝트에는 현재 포함되어 있지 않습니다.)
+
+2.  **수동 스키마 생성**:
+    * 데이터베이스 클라이언트 도구(예: DBeaver, pgAdmin, IntelliJ Database tool)를 사용하여 `db` 컨테이너에 직접 접속한 후, 필요한 `CREATE TABLE` 구문을 실행하여 스키마를 생성할 수 있습니다.
+        * 접속 정보: 호스트 `localhost`, 포트 `${DB_PORT}`, 사용자명 `${DB_USERNAME}`, 비밀번호 `${DB_PASSWORD}`, 데이터베이스명 `${DB_NAME}`
+        * `pet` 테이블 생성 SQL 예시:
+          ```sql
+          CREATE TABLE pet (
+              id BIGSERIAL PRIMARY KEY,
+              name VARCHAR(255)
+          );
+          ```
+
+3.  **개발/테스트 목적의 임시 `ddl-auto` 변경**:
+    * **개발 또는 테스트 목적으로만** `src/main/resources/application-dev.yaml`과 같은 개발용 프로필을 만들고, 해당 파일에 `spring.jpa.hibernate.ddl-auto: create` 또는 `update`로 설정합니다.
+    * 이후 `docker-compose.yml`의 `app` 서비스 `environment` 섹션이나 `.env` 파일에서 `SPRING_PROFILES_ACTIVE: dev`로 설정하여 `dev` 프로필로 실행하면 스키마가 자동으로 생성됩니다.
+    * **주의**: 이 방법은 운영 환경에서는 사용하지 않아야 합니다.
+
+**새로운 사용자는 위 사항을 인지하고, 프로젝트 실행 전 적절한 스키마 준비 방법을 선택해야 합니다.**
+
 
 ---
 ## 🌐 애플리케이션 접속
