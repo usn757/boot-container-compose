@@ -1,17 +1,15 @@
-# Spring Boot Docker 기반 애플리케이션 (PostgreSQL 연동)
+# Spring Boot Docker 기반 애플리케이션 (Pet API 및 PostgreSQL 연동)
 
-이 프로젝트는 간단한 'Pet(반려동물)' 정보를 관리하는 REST API를 제공하는 Spring Boot 애플리케이션입니다. Docker 컨테이너로 패키징되어 있으며, PostgreSQL 데이터베이스 또한 Docker 컨테이너로 실행하여 연동합니다.
+이 프로젝트는 간단한 'Pet(반려동물)' 정보를 관리하는 REST API를 제공하는 Spring Boot 애플리케이션입니다. Docker 컨테이너로 패키징되어 있으며, PostgreSQL 데이터베이스 또한 Docker 컨테이너로 실행하여 연동합니다. 이 문서는 프로젝트 설정, 빌드, 실행 및 API 사용 방법에 대해 안내합니다.
 
 ## ✨ 주요 기능
 
-* "Pet(반려동물) 엔티티 관리를 위한 REST API (/api/pet) 제공"
-* "Pet 정보 조회 (GET) 및 등록 (POST) 기능 구현"
+* Pet(반려동물) 엔티티 관리를 위한 REST API (`/api/pet`) 제공
+* Pet 정보 전체 조회 (GET) 및 신규 등록 (POST) 기능 구현
 * 최적화된 이미지 크기를 위한 멀티 스테이지 Dockerfile을 사용한 컨테이너화
 * PostgreSQL을 데이터베이스 백엔드로 사용 (컨테이너화)
 * 사용자 정의 Docker 네트워크를 통한 컨테이너 간 통신 설정
 * `.env` 파일 및 Spring 프로필을 통한 구성 관리
-
-
 
 ## 🛠️ 사전 준비 사항
 
@@ -105,19 +103,17 @@ docker run -d \
 * `--network db-network`: 이 컨테이너를 `db-network`에 연결합니다.
 * `my-boot:postgres`: 이전에 빌드한 애플리케이션 이미지입니다.
 
-
 ## 🌐 애플리케이션 접속
 
 두 컨테이너가 모두 실행되면 호스트 머신에서 Spring Boot 애플리케이션에 접속할 수 있습니다.
 
 * **애플리케이션 URL**: `http://localhost:8787`
 
-
-## 📄 API 명세
+### 📄 API 명세
 
 애플리케이션은 다음의 API 엔드포인트를 제공합니다.
 
-### 1. Pet 정보 전체 조회
+#### 1. Pet 정보 전체 조회
 
 * **HTTP Method**: `GET`
 * **Endpoint**: `/api/pet`
@@ -134,7 +130,7 @@ docker run -d \
     curl http://localhost:8787/api/pet
     ```
 
-### 2. 신규 Pet 등록
+#### 2. 신규 Pet 등록
 
 * **HTTP Method**: `POST`
 * **Endpoint**: `/api/pet`
@@ -157,9 +153,9 @@ docker run -d \
     curl -X POST -H "Content-Type: application/json" -d '{"name":"야옹이"}' http://localhost:8787/api/pet
     ```
 
-### 데이터 모델
+#### 데이터 모델
 
-#### Pet
+##### Pet
 | 필드명 | 타입   | 설명                     |
 |--------|--------|--------------------------|
 | `id`   | Long   | 고유 식별자 (자동 생성) |
@@ -204,11 +200,40 @@ docker run -d \
 * **1단계 (`build` 스테이지):** JDK 이미지(`eclipse-temurin:17-jdk-alpine`)를 사용하여 Gradle로 Java 애플리케이션을 컴파일하고 실행 가능한 JAR 파일을 빌드합니다.
 * **2단계 (런타임 스테이지):** JDK 이미지보다 작은 JRE 이미지(`eclipse-temurin:17-jre-alpine`)를 사용합니다. `build` 스테이지에서 빌드된 JAR 파일만 복사하여 애플리케이션 실행에 최적화된 가벼운 최종 이미지를 만듭니다.
 
+## 💡 프로젝트 핵심 및 컨테이너화의 이점
+
+이 프로젝트의 개발 및 운영 과정에서 **컨테이너 기술(Docker)은 핵심적인 역할**을 수행합니다. 데이터베이스(PostgreSQL)와 Spring Boot 애플리케이션 모두 Docker 컨테이너로 실행되며, Docker 네트워크를 통해 상호 작용합니다. 이러한 컨테이너 기반 접근 방식은 다음과 같은 주요 이점을 제공합니다.
+
+1.  **환경 일관성 (Consistent Environments)**:
+    개발, 테스트, 운영 환경 전반에 걸쳐 동일한 실행 환경을 보장하여 "제 PC에서는 됐는데..."와 같은 문제를 최소화합니다. `Dockerfile`이 애플리케이션의 실행 환경을 명확하게 정의합니다.
+
+2.  **의존성 관리 단순화 (Simplified Dependency Management)**:
+    애플리케이션 및 데이터베이스의 모든 의존성이 각 컨테이너 내에 캡슐화되어, 호스트 시스템과의 충돌을 방지하고 관리를 용이하게 합니다.
+
+3.  **이식성 향상 (Portability)**:
+    Docker가 설치된 어떤 환경(Linux, Windows, macOS, 클라우드 등)에서도 OS에 구애받지 않고 애플리케이션을 동일하게 실행할 수 있습니다.
+
+4.  **격리성 증대 (Isolation)**:
+    각 컨테이너는 독립적으로 실행되어 안정성과 보안성을 높이며, 서비스 간의 영향도를 줄입니다.
+
+5.  **개발 환경 설정 간소화 (Simplified Setup)**:
+    몇 가지 Docker 명령어만으로 전체 개발 스택(애플리케이션 + 데이터베이스)을 빠르게 구축할 수 있어, 신규 참여자의 온보딩 과정을 단축시킵니다.
+
+6.  **빠른 배포 및 확장성 기반 (Rapid Deployment & Scalability Foundation)**:
+    빌드된 이미지를 통해 신속하게 새 인스턴스를 실행할 수 있으며, 이는 향후 서비스 확장 시 유연성을 제공합니다.
+
+7.  **재현성 보장 (Reproducibility)**:
+    `Dockerfile`과 Docker 이미지를 통해 빌드 및 실행 환경을 언제든지 동일하게 재현할 수 있습니다.
+
+8.  **DevOps 문화 촉진 (DevOps Enablement)**:
+    CI/CD 파이프라인 구축, 자동화된 테스트, 일관된 배포 프로세스 등 현대적인 DevOps 관행을 도입하고 실천하는 데 기여합니다.
+
 ## 💻 기술 스택
 
 * Java 17
 * Spring Boot
+* Spring Data JPA
 * Gradle
 * PostgreSQL
 * Docker
-
+* Lombok
