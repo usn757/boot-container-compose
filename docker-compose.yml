@@ -1,0 +1,53 @@
+services:
+  # Spring Boot 애플리케이션 서비스 정의
+  app:
+    build: . # 현재 디렉토리의 Dockerfile을 사용하여 이미지를 빌드
+    container_name: boot_container_compose
+    ports:
+      - "${APP_PORT}:8080" # 호스트와 컨테이너 간 포트 매핑
+    env_file:
+      - .env # .env 파일에서 환경 변수를 로드하여 컨테이너에 전달
+    depends_on:
+      db: # 여기에 condition을 추가하여 DB가 준비될 때까지 기다리게 할 수 있습니다
+        condition: service_healthy # service_healthy를 사용하려면 db 서비스에 healthcheck 추가 필요
+    networks:
+      - app-network # 이 서비스를 app-network 에 연결
+    restart: unless-stopped # 컨테이너가 비정상 종료되면 재시작
+    # command: ["sh", "-c", "sleep 10 && java -jar app.jar"]
+    # db를 위해 10초 대기 ? condition: service_healthy를 사용하자
+    # Dockerfile의 ENTRYPOINT를 따르는 것이 좋음
+
+  # PostgreSQL 데이터베이스 서비스 정의
+  db: # <--- PostgreSQL 서비스의 이름 / 호스트 이름
+    image: postgres:16-alpine # 사용할 PostgreSQL 이미지
+    container_name: postgres_compose # (수동 실행한 컨테이너와 충돌 방지)
+    # env_file: [- .env] # 이렇게 사용하면 .env 파일의 모든 변수를 가져옵니다.
+    # DB 관련 환경변수만 명시적으로 지정하는 것이 더 명확할 수 있습니다.
+    environment: # 아래와 같이 명시적으로 지정하는 것을 권장합니다.
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD} # .env 파일의 POSTGRES_PASSWORD 사용
+      POSTGRES_DB: ${DB_NAME}
+
+    ports:
+      - "${DB_PORT}:5432" # 호스트와 컨테이너 간 포트 매핑 (호스트:컨테이너)
+    volumes:
+      - postgres-data:/var/lib/postgresql/data # 데이터를 영구적으로 보존하기 위한 볼륨 설정
+    networks:
+      - app-network # 이 서비스를 app-network 에 연결
+    restart: unless-stopped # 컨테이너가 비정상 종료되면 재시작 (수동 중지 제외)
+    healthcheck: # DB 서비스가 실제로 준비되었는지 확인하는 healthcheck (선택 사항이지만 권장)
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d postgres" ] # DB_URL에 명시된 DB 이름 사용
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      # start_period: 10s # (선택 사항) PostgreSQL 시작이 느릴 경우 추가 고려
+
+
+# 볼륨 정의
+volumes:
+  postgres-data: # 'postgres-data' 라는 이름의 Docker 관리 볼륨 생성
+
+# 네트워크 정의
+networks:
+  app-network: # 'app-network' 라는 이름의 브릿지 네트워크 생성
+    driver: bridge

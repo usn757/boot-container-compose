@@ -1,9 +1,9 @@
-package org.example.bootcontainerreview.controller;
+package org.example.bootcontainercompose.controller;
 
 
 import lombok.RequiredArgsConstructor;
-import org.example.bootcontainerreview.entity.Pet;
-import org.example.bootcontainerreview.repository.PetRepository;
+import org.example.bootcontainercompose.entity.Pet;
+import org.example.bootcontainercompose.repository.PetRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

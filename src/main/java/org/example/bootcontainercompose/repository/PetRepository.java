@@ -1,6 +1,6 @@
-package org.example.bootcontainerreview.repository;
+package org.example.bootcontainercompose.repository;
 
-import org.example.bootcontainerreview.entity.Pet;
+import org.example.bootcontainercompose.entity.Pet;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PetRepository extends JpaRepository<Pet, Long> {

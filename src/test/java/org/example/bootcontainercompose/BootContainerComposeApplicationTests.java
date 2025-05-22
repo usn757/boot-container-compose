@@ -1,10 +1,10 @@
-package org.example.bootcontainerreview;
+package org.example.bootcontainercompose;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class BootContainerReviewApplicationTests {
+class BootContainerComposeApplicationTests {
 
     @Test
     void contextLoads() {

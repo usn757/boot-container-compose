@@ -1,4 +1,4 @@
-package org.example.bootcontainerreview.entity;
+package org.example.bootcontainercompose.entity;
 
 
 import jakarta.persistence.Entity;
