@@ -1,0 +1,6 @@
+# /src/main/resources/application.yaml
+spring:
+  application:
+    name: boot-container-review
+  profiles:
+    active: dev
